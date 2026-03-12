@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eco-App
 
-## Getting Started
+A Next.js application for eco collection workflows, including phone-based OTP authentication.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20+
+- npm 10+
+- A Twilio account with either an SMS-capable phone number or Messaging Service
+
+## Setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Copy environment variables and configure your Twilio credentials:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Required variables:
+
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - One sender option: `TWILIO_PHONE_NUMBER` **or** `TWILIO_MESSAGING_SERVICE_SID`
+
+   > `.env.example` is only a template and is not loaded by Next.js at runtime.
+   > Put real values in `.env.local` and restart `npm run dev` after changes.
+
+3. Run the app:
+
+   ```bash
+   npm run dev
+   ```
+
+## Build
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## OTP Authentication
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+OTP delivery uses the Twilio REST API from `app/api/auth/send-otp`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- The app validates Sri Lankan mobile numbers in `94XXXXXXXXX` format (without `+94` in user input).
+- OTP codes are generated server-side and sent via Twilio SMS.
+- OTP verification is handled by `app/api/auth/check-otp`.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If Twilio credentials are missing or invalid, the API returns an error so issues are visible during setup instead of falling back to mock OTP codes.

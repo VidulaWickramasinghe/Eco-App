@@ -3,7 +3,6 @@ import { isValidSriLankanPhone, normalizeSriLankanPhone } from '@/lib/phone';
 import { sendOtpSms } from '@/lib/twilio';
 
 function generateOtp() {
-  if (!process.env.TWILIO_ACCOUNT_SID) return '123456';
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
@@ -44,9 +43,12 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to send OTP';
+
     return NextResponse.json(
-      { error: 'Failed to send OTP' },
+      { error: message },
       { status: 500 }
     );
   }

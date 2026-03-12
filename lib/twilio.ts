@@ -1,19 +1,38 @@
-export async function sendOtpSms(phone: string, otp: string) {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_PHONE_NUMBER;
+function requireEnv(name: string) {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `Missing required environment variable: ${name}. Add it to .env.local and restart the server.`
+    );
+  }
+  return value;
+}
 
-  if (!sid || !token || !from) {
-    console.log(`[MOCK OTP] +94${phone} -> ${otp}`);
-    return { ok: true, mode: 'mock' as const };
+export async function sendOtpSms(phone: string, otp: string) {
+  const sid = requireEnv('TWILIO_ACCOUNT_SID');
+  const token = requireEnv('TWILIO_AUTH_TOKEN');
+  const from = process.env.TWILIO_PHONE_NUMBER;
+  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+
+  if (!from && !messagingServiceSid) {
+    throw new Error(
+      'Missing Twilio sender configuration. Set TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID in .env.local and restart the server.'
+    );
   }
 
   const auth = Buffer.from(`${sid}:${token}`).toString('base64');
   const body = new URLSearchParams({
     To: `+94${phone}`,
-    From: from,
     Body: `Your EcoCollect verification code is ${otp}`,
   });
+
+  if (from) {
+    body.set('From', from);
+  }
+
+  if (messagingServiceSid) {
+    body.set('MessagingServiceSid', messagingServiceSid);
+  }
 
   const response = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,

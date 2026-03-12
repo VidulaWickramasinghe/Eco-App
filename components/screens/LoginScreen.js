@@ -74,8 +74,8 @@ export default function LoginScreen() {
           By continuing you agree to our Terms & Privacy Policy
         </p>
 
-        <div className="mt-6 rounded-2xl bg-amber-50 p-4 text-sm text-amber-700">
-          Dev note: without Twilio credentials, OTP runs in mock mode with code <strong>123456</strong>.
+        <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm text-blue-700">
+          OTP messages are sent through Twilio. Configure valid Twilio credentials in environment variables before testing sign in.
         </div>
       </div>
     </div>
