@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatSriLankanPhone, normalizeSriLankanPhone } from '@/lib/phone';
+import { sendFirebaseOtp } from '@/lib/firebase-web';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -16,23 +17,13 @@ export default function LoginScreen() {
 
     try {
       const normalized = normalizeSriLankanPhone(phone);
+      const e164 = `+94${normalized}`;
 
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: normalized }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Failed to send OTP');
-        return;
-      }
-
+      await sendFirebaseOtp(e164, 'recaptcha-container-login');
       router.push(`/verify?phone=${normalized}`);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send OTP';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -75,9 +66,11 @@ export default function LoginScreen() {
         </p>
 
         <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm text-blue-700">
-          OTP messages are sent through Twilio. Configure valid Twilio credentials in environment variables before testing sign in.
+          OTP messages are sent using Firebase Phone Authentication. Configure NEXT_PUBLIC_FIREBASE_* variables in `.env.local`.
         </div>
       </div>
+
+      <div id="recaptcha-container-login" />
     </div>
   );
 }

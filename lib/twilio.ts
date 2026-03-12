@@ -45,6 +45,14 @@ export async function sendOtpSms(phone: string, otp: string) {
   const token = requireEnv('TWILIO_AUTH_TOKEN');
   const { from, messagingServiceSid } = getTwilioSender();
 
+  return { from, messagingServiceSid };
+}
+
+export async function sendOtpSms(phone: string, otp: string) {
+  const sid = requireEnv('TWILIO_ACCOUNT_SID');
+  const token = requireEnv('TWILIO_AUTH_TOKEN');
+  const { from, messagingServiceSid } = getTwilioSender();
+
   const auth = Buffer.from(`${sid}:${token}`).toString('base64');
   const body = new URLSearchParams({
     To: `+94${phone}`,

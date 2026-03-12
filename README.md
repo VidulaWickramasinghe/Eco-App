@@ -6,7 +6,7 @@ A Next.js application for eco collection workflows, including phone-based OTP au
 
 - Node.js 20+
 - npm 10+
-- A Twilio account with either an SMS-capable phone number or Messaging Service
+- Firebase project with **Phone Authentication** enabled
 
 ## Setup
 
@@ -16,24 +16,27 @@ A Next.js application for eco collection workflows, including phone-based OTP au
    npm install
    ```
 
-2. Copy environment variables and configure your Twilio credentials:
+2. Copy environment variables:
 
    ```bash
    cp .env.example .env.local
    ```
 
-   Required variables:
+3. Configure Firebase Web Auth values in `.env.local`:
 
-   - `TWILIO_ACCOUNT_SID`
-   - `TWILIO_AUTH_TOKEN`
-   - One sender option: `TWILIO_PHONE_NUMBER` **or** `TWILIO_MESSAGING_SERVICE_SID`
-   - Do not set both at once.
-   - `TWILIO_MESSAGING_SERVICE_SID` must start with `MG` (Account SID starts with `AC` and is not valid here).
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
+   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 
-   > `.env.example` is only a template and is not loaded by Next.js at runtime.
-   > Put real values in `.env.local` and restart `npm run dev` after changes.
+   Notes:
+   - `.env.example` is only a template and is not loaded at runtime.
+   - Restart `npm run dev` after env changes.
+   - In Firebase Console, add your Vercel domain to **Authentication → Settings → Authorized domains**.
+   - Enable **Phone** provider in **Authentication → Sign-in method**.
 
-3. Run the app:
+4. Run the app:
 
    ```bash
    npm run dev
@@ -46,12 +49,21 @@ npm run build
 npm run start
 ```
 
-## OTP Authentication
+## OTP Authentication (Firebase)
 
-OTP delivery uses the Twilio REST API from `app/api/auth/send-otp`.
+- OTP is sent using **Firebase Phone Authentication** from the client.
+- Invisible reCAPTCHA is used by Firebase before sending OTP.
+- OTP verification signs in the Firebase user and then creates an app session cookie via `/api/auth/firebase-session`.
+- The app validates Sri Lankan phone input and sends as E.164 format (`+94XXXXXXXXX`).
 
-- The app validates Sri Lankan mobile numbers in `94XXXXXXXXX` format (without `+94` in user input).
-- OTP codes are generated server-side and sent via Twilio SMS.
-- OTP verification is handled by `app/api/auth/check-otp`.
+## Vercel deployment checklist
 
-If Twilio credentials are missing or invalid, the API returns an error so issues are visible during setup instead of falling back to mock OTP codes.
+Set these Environment Variables in Vercel Project Settings:
+
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+
+Then redeploy.
