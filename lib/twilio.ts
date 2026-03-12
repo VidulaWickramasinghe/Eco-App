@@ -29,21 +29,6 @@ function getTwilioSender() {
       'TWILIO_MESSAGING_SERVICE_SID must start with "MG". Do not use your Account SID (starts with "AC").'
     );
   }
-  return value;
-}
-
-export async function sendOtpSms(phone: string, otp: string) {
-  const sid = requireEnv('TWILIO_ACCOUNT_SID');
-  const token = requireEnv('TWILIO_AUTH_TOKEN');
-  const from = requireEnv('TWILIO_PHONE_NUMBER');
-
-  return { from, messagingServiceSid };
-}
-
-export async function sendOtpSms(phone: string, otp: string) {
-  const sid = requireEnv('TWILIO_ACCOUNT_SID');
-  const token = requireEnv('TWILIO_AUTH_TOKEN');
-  const { from, messagingServiceSid } = getTwilioSender();
 
   return { from, messagingServiceSid };
 }

@@ -22,13 +22,14 @@ A Next.js application for eco collection workflows, including phone-based OTP au
    cp .env.example .env.local
    ```
 
-3. Configure Firebase Web Auth values in `.env.local`:
+3. Verify Firebase config values in `.env.local`:
 
    - `NEXT_PUBLIC_FIREBASE_API_KEY`
    - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
    - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-   - `NEXT_PUBLIC_FIREBASE_APP_ID`
+   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
    - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
    Notes:
    - `.env.example` is only a template and is not loaded at runtime.
@@ -51,10 +52,11 @@ npm run start
 
 ## OTP Authentication (Firebase)
 
-- OTP is sent using **Firebase Phone Authentication** from the client.
+- OTP is sent using **Firebase Phone Authentication** from the login screen.
 - Invisible reCAPTCHA is used by Firebase before sending OTP.
-- OTP verification signs in the Firebase user and then creates an app session cookie via `/api/auth/firebase-session`.
-- The app validates Sri Lankan phone input and sends as E.164 format (`+94XXXXXXXXX`).
+- OTP verification happens on the verify screen; after success the app posts Firebase ID token to `/api/auth/firebase-session`.
+- `/api/auth/firebase-session` validates the token with Google Identity Toolkit and sets app session cookies.
+- Legacy OTP endpoints (`/api/auth/send-otp`, `/api/auth/check-otp`) are deprecated.
 
 ## Vercel deployment checklist
 
@@ -63,7 +65,8 @@ Set these Environment Variables in Vercel Project Settings:
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 Then redeploy.
