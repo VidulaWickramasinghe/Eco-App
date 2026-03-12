@@ -3,6 +3,7 @@
 import { ShieldCheck, ChevronLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
+import { sendFirebaseOtp, verifyFirebaseOtp } from '@/lib/firebase-web';
 
 export default function OTPScreen() {
   const router = useRouter();
@@ -41,23 +42,24 @@ export default function OTPScreen() {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/check-otp', {
+      const { idToken, phone: verifiedPhone } = await verifyFirebaseOtp(code);
+      const res = await fetch('/api/auth/firebase-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
+        body: JSON.stringify({ idToken, phone: verifiedPhone }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error || 'Invalid OTP');
+        setError(data.error || 'Failed to create session');
         return;
       }
 
       router.push('/home');
       router.refresh();
-    } catch {
-      setError('Failed to verify OTP');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to verify OTP';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -65,11 +67,13 @@ export default function OTPScreen() {
 
   const resend = async () => {
     setError('');
-    await fetch('/api/auth/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone }),
-    });
+
+    try {
+      await sendFirebaseOtp(`+94${phone}`, 'recaptcha-container-verify');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to resend OTP';
+      setError(message);
+    }
   };
 
   return (
@@ -128,6 +132,8 @@ export default function OTPScreen() {
           </button>
         </div>
       </div>
+
+      <div id="recaptcha-container-verify" />
     </div>
   );
 }
