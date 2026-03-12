@@ -12,10 +12,13 @@ export default function WithdrawScreen() {
     setSubScreen,
   } = useAppState();
 
+  // Added safety fallback for user balance
+  const maxBalance = user?.walletBalance || 0;
+
   const invalidAmount =
     !withdrawAmount ||
     Number(withdrawAmount) <= 0 ||
-    Number(withdrawAmount) > user.walletBalance;
+    Number(withdrawAmount) > maxBalance;
 
   return (
     <div className="slide-up absolute inset-0 z-50 flex flex-col bg-slate-50">
@@ -29,7 +32,7 @@ export default function WithdrawScreen() {
       <div className="flex flex-1 flex-col p-6">
         <div className="mb-8 rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-center text-emerald-800">
           <p className="mb-1 font-medium">Available Balance</p>
-          <p className="text-4xl font-extrabold">Rs. {user.walletBalance}</p>
+          <p className="text-4xl font-extrabold">Rs. {maxBalance}</p>
         </div>
 
         <label className="mb-2 block text-sm font-bold text-slate-700">
@@ -43,7 +46,7 @@ export default function WithdrawScreen() {
             className="w-full rounded-2xl border-2 border-slate-200 bg-white p-4 pl-14 text-2xl font-bold outline-none focus:border-emerald-500"
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
-            max={user.walletBalance}
+            max={maxBalance}
           />
         </div>
 
@@ -80,7 +83,7 @@ export default function WithdrawScreen() {
 
         {invalidAmount && (
           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-600">
-            Enter a valid amount between 1 and {user.walletBalance}.
+            Enter a valid amount between 1 and {maxBalance}.
           </div>
         )}
 
