@@ -1,4 +1,6 @@
-export default function MobileFrame({ children }) {
+import React from 'react';
+
+export default function MobileFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full max-w-md mx-auto h-screen bg-black sm:py-4 sm:px-4 font-sans text-gray-800">
       <div className="w-full h-full bg-[#F5F7F8] relative overflow-hidden sm:rounded-[40px] shadow-2xl flex flex-col border-4 border-black">
