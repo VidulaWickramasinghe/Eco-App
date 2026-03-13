@@ -19,7 +19,18 @@ export default function LoginScreen() {
       const normalized = normalizeSriLankanPhone(phone);
       const e164 = `+94${normalized}`;
 
-      await sendFirebaseOtp(e164, 'recaptcha-container-login');
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: normalized }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to send OTP');
+        return;
+      }
+
       router.push(`/verify?phone=${normalized}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to send OTP';
@@ -66,7 +77,7 @@ export default function LoginScreen() {
         </p>
 
         <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm text-blue-700">
-          OTP messages are sent using Firebase Phone Authentication. Configure NEXT_PUBLIC_FIREBASE_* variables in `.env.local`.
+          OTP expires in 5 minutes and supports up to 2 successful verifications per code.
         </div>
       </div>
 

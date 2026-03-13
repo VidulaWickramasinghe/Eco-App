@@ -1,12 +1,12 @@
 # Eco-App
 
-A Next.js application for eco collection workflows, including phone-based OTP authentication.
+A Next.js application with OTP authentication for Sri Lankan mobile numbers.
 
 ## Requirements
 
 - Node.js 20+
 - npm 10+
-- Firebase project with **Phone Authentication** enabled
+- Twilio account with SMS capability
 
 ## Setup
 
@@ -16,27 +16,19 @@ A Next.js application for eco collection workflows, including phone-based OTP au
    npm install
    ```
 
-2. Copy environment variables:
+2. Create environment file:
 
    ```bash
    cp .env.example .env.local
    ```
 
-3. Verify Firebase config values in `.env.local`:
+3. Configure Twilio in `.env.local`:
 
-   - `NEXT_PUBLIC_FIREBASE_API_KEY`
-   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-   - `NEXT_PUBLIC_FIREBASE_APP_ID`
-
-   Notes:
-   - `.env.example` is only a template and is not loaded at runtime.
-   - Restart `npm run dev` after env changes.
-   - In Firebase Console, add your Vercel domain to **Authentication → Settings → Authorized domains**.
-   - Ensure your Firebase **Web API key** is active for the same project (`ecocollect-37816`).
-   - Enable **Phone** provider in **Authentication → Sign-in method**.
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - one sender option:
+     - `TWILIO_PHONE_NUMBER`, or
+     - `TWILIO_MESSAGING_SERVICE_SID` (must start with `MG`)
 
 4. Run the app:
 
@@ -51,37 +43,21 @@ npm run build
 npm run start
 ```
 
-## OTP Authentication (Firebase)
+## OTP Flow (Server-generated OTP)
 
-- OTP is sent using **Firebase Phone Authentication** from the login screen.
-- Invisible reCAPTCHA is used by Firebase before sending OTP.
-- OTP verification happens on the verify screen; after success the app posts Firebase ID token to `/api/auth/firebase-session`.
-- `/api/auth/firebase-session` verifies the Firebase ID token signature/claims against Google public certs and then sets app session cookies.
-- Legacy OTP endpoints (`/api/auth/send-otp`, `/api/auth/check-otp`) are deprecated.
+- `POST /api/auth/send-otp`
+  - Generates a 6-digit OTP
+  - Hashes OTP before storing in memory
+  - Expires in 5 minutes
+  - Allows maximum 2 successful uses
+  - Sends OTP via Twilio SMS
 
-## Vercel deployment checklist
+- `POST /api/auth/check-otp`
+  - Validates OTP with constant-time comparison
+  - Enforces expiry, max uses, and invalid attempt limit
+  - Sets `ec_session` and `ec_user_phone` cookies on success
 
-Set these Environment Variables in Vercel Project Settings:
+## Notes
 
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-
-Then redeploy.
-
-
-## Notes on Firebase Admin SDK
-
-If you use Firebase Admin SDK locally, do not commit `serviceAccountKey.json`.
-Use environment variables in hosting (e.g., Vercel) instead.
-
-
-## Common OTP errors
-
-- `auth/invalid-api-key`: `NEXT_PUBLIC_FIREBASE_API_KEY` is wrong/restricted or belongs to a different Firebase project.
-  - In Google Cloud Console → APIs & Services → Credentials, ensure the key belongs to project `ecocollect-37816`.
-  - If API key restrictions are enabled, allow your Vercel domain (`https://eco-app-rust.vercel.app`) and localhost for development.
-- `auth/app-not-authorized`: add the deployment domain in Firebase Authentication authorized domains.
+- This implementation avoids Firebase API key issues by using direct server-side OTP send + verify.
+- In-memory OTP store is suitable for a single-instance deployment. For multi-instance production, move OTP storage to Redis/PostgreSQL.
