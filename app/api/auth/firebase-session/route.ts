@@ -3,7 +3,7 @@ import { normalizeSriLankanPhone } from '@/lib/phone';
 import { verifyFirebaseIdToken } from '@/lib/firebase-token';
 
 function getFirebaseProjectId() {
-  return process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'ecocollect-37816';
+  return process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '880109607741';
 }
 
 export async function POST(req: NextRequest) {
