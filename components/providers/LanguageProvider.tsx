@@ -3,7 +3,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -19,19 +18,18 @@ const LanguageContext = createContext<LanguageContextType | null>(null);
 
 const STORAGE_KEY = 'eco-collect-language';
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('English');
+const getInitialLanguage = (): Language => {
+  if (typeof window === 'undefined') return 'English';
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (
-      saved === 'English' ||
-      saved === 'Sinhala' ||
-      saved === 'Tamil'
-    ) {
-      setLanguageState(saved);
-    }
-  }, []);
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'English' || saved === 'Sinhala' || saved === 'Tamil') {
+    return saved;
+  }
+  return 'English';
+};
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
 
   const setLanguage = (value: Language) => {
     setLanguageState(value);
