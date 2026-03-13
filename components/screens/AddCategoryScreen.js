@@ -27,7 +27,7 @@ export default function AddCategoryScreen() {
             <button
               key={key}
               onClick={() => {
-                setTempCategory(key as keyof typeof PRICING);
+                setTempCategory(key);
                 setSubScreen('ADD_DETAILS');
               }}
               className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-colors hover:border-emerald-500 hover:bg-emerald-50"

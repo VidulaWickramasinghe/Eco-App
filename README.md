@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eco-App
 
-## Getting Started
+A Next.js application for eco collection workflows, including phone-based OTP authentication.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20+
+- npm 10+
+- Firebase project with **Phone Authentication** enabled
+
+## Setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Copy environment variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. Verify Firebase config values in `.env.local`:
+
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
+
+   Notes:
+   - `.env.example` is only a template and is not loaded at runtime.
+   - Restart `npm run dev` after env changes.
+   - In Firebase Console, add your Vercel domain to **Authentication → Settings → Authorized domains**.
+   - Enable **Phone** provider in **Authentication → Sign-in method**.
+
+4. Run the app:
+
+   ```bash
+   npm run dev
+   ```
+
+## Build
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## OTP Authentication (Firebase)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- OTP is sent using **Firebase Phone Authentication** from the login screen.
+- Invisible reCAPTCHA is used by Firebase before sending OTP.
+- OTP verification happens on the verify screen; after success the app posts Firebase ID token to `/api/auth/firebase-session`.
+- `/api/auth/firebase-session` verifies the Firebase ID token signature/claims against Google public certs and then sets app session cookies.
+- Legacy OTP endpoints (`/api/auth/send-otp`, `/api/auth/check-otp`) are deprecated.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Vercel deployment checklist
 
-## Learn More
+Set these Environment Variables in Vercel Project Settings:
 
-To learn more about Next.js, take a look at the following resources:
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Then redeploy.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Notes on Firebase Admin SDK
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you use Firebase Admin SDK locally, do not commit `serviceAccountKey.json`.
+Use environment variables in hosting (e.g., Vercel) instead.
