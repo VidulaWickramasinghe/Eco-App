@@ -2,8 +2,8 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -68,12 +68,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [selectedPickupTime, setSelectedPickupTime] = useState(PICKUP_TIME_SLOTS[0]);
   const [withdrawAmount, setWithdrawAmount] = useState(String(DEFAULT_USER.walletBalance));
 
-  useEffect(() => {
-    setUser((prev) => ({
-      ...prev,
-      language,
-    }));
-  }, [language]);
+  const userWithLanguage = useMemo(() => ({ ...user, language }), [user, language]);
 
   const totalCollectionValue = collection.reduce(
     (sum, item) => sum + item.estimatedValue,
@@ -85,12 +80,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     0
   );
 
-  const resetAddFlow = () => {
+  const resetAddFlow = useCallback(() => {
     setTempCategory(null);
     setTempQuantity('');
-  };
+  }, []);
 
-  const handleAddItem = () => {
+  const handleAddItem = useCallback(() => {
     if (!tempCategory || !tempQuantity || Number.isNaN(Number(tempQuantity))) return;
     const quantity = Number(tempQuantity);
     if (quantity <= 0) return;
@@ -107,9 +102,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setCollection((prev) => [...prev, newItem]);
     resetAddFlow();
     setSubScreen(null);
-  };
+  }, [tempCategory, tempQuantity, resetAddFlow]);
 
-  const handleRequestPickup = () => {
+  const handleRequestPickup = useCallback(() => {
     if (collection.length === 0) return;
 
     const pickupAmount = totalCollectionValue;
@@ -137,9 +132,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
     setCollection([]);
     setSubScreen('TRACKING');
-  };
+  }, [collection.length, totalCollectionValue]);
 
-  const handleWithdraw = () => {
+  const handleWithdraw = useCallback(() => {
     const amount = Number(withdrawAmount);
 
     if (!amount || amount <= 0 || amount > user.walletBalance) return;
@@ -163,7 +158,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
     setWithdrawAmount('0');
     setSubScreen(null);
-  };
+  }, [user.walletBalance, withdrawAmount]);
 
   const value = useMemo(
     () => ({
@@ -171,7 +166,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setActiveTab,
       subScreen,
       setSubScreen,
-      user,
+      user: userWithLanguage,
       setUser,
       collection,
       setCollection,
@@ -195,7 +190,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [
       activeTab,
       subScreen,
-      user,
+      userWithLanguage,
       collection,
       history,
       tempCategory,
@@ -204,6 +199,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       totalItemsCount,
       selectedPickupTime,
       withdrawAmount,
+      handleAddItem,
+      handleRequestPickup,
+      handleWithdraw,
+      resetAddFlow,
     ]
   );
 

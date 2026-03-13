@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatSriLankanPhone, normalizeSriLankanPhone } from '@/lib/phone';
+import { sendFirebaseOtp } from '@/lib/firebase-web';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function LoginScreen() {
 
     try {
       const normalized = normalizeSriLankanPhone(phone);
+      const e164 = `+94${normalized}`;
 
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
@@ -30,8 +32,9 @@ export default function LoginScreen() {
       }
 
       router.push(`/verify?phone=${normalized}`);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send OTP';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -77,6 +80,8 @@ export default function LoginScreen() {
           OTP expires in 5 minutes and supports up to 2 successful verifications per code.
         </div>
       </div>
+
+      <div id="recaptcha-container-login" />
     </div>
   );
 }

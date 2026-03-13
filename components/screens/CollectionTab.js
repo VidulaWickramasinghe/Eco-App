@@ -1,6 +1,6 @@
 'use client';
 
-import { Package, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { PRICING } from '@/lib/constants';
 import { useAppState } from '@/components/providers/AppStateProvider';
 
