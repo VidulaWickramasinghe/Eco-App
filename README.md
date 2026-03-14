@@ -19,16 +19,23 @@ A Next.js application with OTP authentication for Sri Lankan mobile numbers.
 2. Create environment file:
 
    ```bash
-   cp .env.example .env.local
+   cp .env.local.example .env.local
    ```
 
-3. Configure Twilio in `.env.local`:
+3. Configure Twilio and email settings in `.env.local`:
 
    - `TWILIO_ACCOUNT_SID`
    - `TWILIO_AUTH_TOKEN`
    - one sender option:
      - `TWILIO_PHONE_NUMBER`, or
      - `TWILIO_MESSAGING_SERVICE_SID` (must start with `MG`)
+   - SMTP settings for email notifications:
+     - `SMTP_HOST`
+     - `SMTP_PORT`
+     - `SMTP_USER`
+     - `SMTP_PASS`
+     - `SMTP_FROM`
+     - `CONTACT_TO_EMAIL`
 
 4. Run the app:
 
